@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Futuristic Space Registration</title>
+
+<style>
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ================= BODY & CANVAS ================= */
+body {
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ================= LAYOUT ================= */
+.wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* ================= CARD ================= */
+.card {
+  position: relative;
+  width: 420px;
+  max-width: 100%;
+  padding: 36px;
+  border-radius: 18px;
+  background: #0b0b16;
+  box-shadow:
+    0 0 25px rgba(127,0,255,0.5),
+    0 0 45px rgba(0,229,255,0.3);
+  animation: enter 0.9s ease;
+  overflow: hidden;
+}
+
+/* Animated HUD border */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  background: linear-gradient(
+    120deg,
+    #7F00FF,
+    #00E5FF,
+    #7F00FF
+  );
+  background-size: 300% 300%;
+  animation: borderFlow 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(35px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ================= TITLE ================= */
+h2 {
+  text-align: center;
+  margin-bottom: 28px;
+  font-size: 26px;
+  background: linear-gradient(90deg, #7F00FF, #00E5FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ================= INPUT FIELDS ================= */
+.field {
+  position: relative;
+  margin-bottom: 26px;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 12px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #444;
+  color: #fff;
+  outline: none;
+  font-size: 15px;
+}
+
+.field label {
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  color: #888;
+  pointer-events: none;
+  transition: 0.3s;
+}
+
+.field input:focus + label,
+.field input:valid + label,
+.field textarea:focus + label,
+.field textarea:valid + label {
+  top: -10px;
+  font-size: 12px;
+  color: #00E5FF;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg,#7F00FF,#00E5FF) 1;
+  animation: pulse 0.4s;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 rgba(0,229,255,0); }
+  50% { box-shadow: 0 6px 10px rgba(0,229,255,0.25); }
+  100% { box-shadow: 0 0 0 rgba(0,229,255,0); }
+}
+
+.error {
+  font-size: 12px;
+  color: #ff5c5c;
+  margin-top: 4px;
+}
+
+/* ================= PASSWORD STRENGTH ================= */
+.strength {
+  height: 5px;
+  border-radius: 4px;
+  background: #222;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.strength span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  transition: width 0.4s;
+}
+
+/* ================= BUTTON ================= */
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(90deg,#7F00FF,#00E5FF);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(0,229,255,0.8);
+}
+
+/* ================= SUCCESS ================= */
+.success {
+  display: none;
+  text-align: center;
+  animation: successIn 1s ease forwards;
+}
+
+.success h1 {
+  font-size: 28px;
+  color: #00ffcc;
+  margin-bottom: 10px;
+  text-shadow: 0 0 15px rgba(0,255,204,0.6);
+}
+
+@keyframes successIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 480px) {
+  .card {
+    width: 100%;
+    padding: 28px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="space"></canvas>
+
+<div class="wrapper">
+  <div class="card" id="card">
+    <h2>Create Account</h2>
+
+    <form id="form">
+      <div class="field">
+        <input id="fname" required />
+        <label>First Name</label>
+        <div class="error" id="fnameErr"></div>
+      </div>
+
+      <div class="field">
+        <input id="lname" required />
+        <label>Last Name</label>
+        <div class="error" id="lnameErr"></div>
+      </div>
+
+      <div class="field">
+        <input type="password" id="password" required />
+        <label>Password</label>
+        <div class="strength"><span id="strengthBar"></span></div>
+        <div class="error" id="passErr"></div>
+      </div>
+
+      <div class="field">
+        <input id="email" required />
+        <label>Email</label>
+        <div class="error" id="emailErr"></div>
+      </div>
+
+      <div class="field">
+        <input id="mobile" required />
+        <label>Mobile Number</label>
+        <div class="error" id="mobileErr"></div>
+      </div>
+
+      <div class="field">
+        <textarea id="address" rows="3" required></textarea>
+        <label>Address</label>
+        <div class="error" id="addrErr"></div>
+      </div>
+
+      <button>Register</button>
+    </form>
+
+    <div class="success" id="success">
+      <h1>🚀 Registered Successfully!</h1>
+      <p>Welcome to the future.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= SPACE WARP + SHOOTING STARS ================= */
+const c = document.getElementById("space");
+const ctx = c.getContext("2d");
+let w,h;
+function resize(){ w=c.width=innerWidth; h=c.height=innerHeight }
+addEventListener("resize",resize); resize();
+
+const warp = Array.from({length:900},()=>({
+  x:Math.random()*w-w/2,
+  y:Math.random()*h-h/2,
+  z:Math.random()*w
+}));
+
+const shots=[];
+
+setInterval(()=>{
+  for(let i=0;i<3;i++){
+    shots.push({
+      x:Math.random()*w,
+      y:Math.random()*h*0.4,
+      vx:Math.random()*8+8,
+      vy:Math.random()*5+4,
+      life:0,
+      max:70,
+      col:["#fff","#00E5FF","#7F00FF"][Math.floor(Math.random()*3)]
+    });
+  }
+},600);
+
+function anim(){
+  ctx.fillStyle="rgba(0,0,0,0.35)";
+  ctx.fillRect(0,0,w,h);
+
+  ctx.save();
+  ctx.translate(w/2,h/2);
+  warp.forEach(s=>{
+    s.z-=12; if(s.z<=0) s.z=w;
+    const x=s.x/s.z*w, y=s.y/s.z*h;
+    const size=(1-s.z/w)*3;
+    ctx.fillStyle="#00E5FF";
+    ctx.fillRect(x,y,size,size);
+  });
+  ctx.restore();
+
+  for(let i=shots.length-1;i>=0;i--){
+    const s=shots[i];
+    s.x+=s.vx; s.y+=s.vy; s.life++;
+    ctx.strokeStyle=`${s.col}`;
+    ctx.globalAlpha=1-s.life/s.max;
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y);
+    ctx.lineTo(s.x-s.vx*6,s.y-s.vy*6);
+    ctx.stroke();
+    ctx.globalAlpha=1;
+    if(s.life>s.max) shots.splice(i,1);
+  }
+
+  requestAnimationFrame(anim);
+}
+anim();
+
+/* ================= FORM LOGIC ================= */
+const strengthBar=document.getElementById("strengthBar");
+password.oninput=()=>{
+  let v=password.value.length;
+  strengthBar.style.width=v<6?"33%":v<10?"66%":"100%";
+  strengthBar.style.background=v<6?"red":v<10?"orange":"linear-gradient(90deg,#7F00FF,#00E5FF)";
+};
+
+form.onsubmit=e=>{
+  e.preventDefault();
+  document.querySelectorAll(".error").forEach(e=>e.textContent="");
+  let ok=true;
+
+  if(!/^[A-Za-z]{6,}$/.test(fname.value)){fnameErr.textContent="Min 6 letters";ok=false;}
+  if(lname.value===""){lnameErr.textContent="Required";ok=false;}
+  if(password.value.length<6){passErr.textContent="Min 6 chars";ok=false;}
+  if(!/^[^@]+@[^@]+\.[a-z]{2,}$/i.test(email.value)){emailErr.textContent="Invalid email";ok=false;}
+  if(!/^[0-9]{10}$/.test(mobile.value)){mobileErr.textContent="10 digits";ok=false;}
+  if(address.value===""){addrErr.textContent="Required";ok=false;}
+
+  if(ok){
+    form.style.display="none";
+    success.style.display="block";
+  }
+};
+</script>
+
+</body>
+</html>
